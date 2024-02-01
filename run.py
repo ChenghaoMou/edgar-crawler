@@ -1,4 +1,3 @@
-import glob
 import hashlib
 import itertools
 import math
@@ -15,14 +14,14 @@ from bs4 import BeautifulSoup
 from cachier import cachier
 from loguru import logger
 from tqdm import tqdm
-from urllib3_future.util import Retry
+from urllib3.util import Retry
 
 from ratelimit import LimiterSession
 
 
 def hash_args(args, kwargs):
     signature = ",".join(sorted(f"{arg}" for arg in args)) + \
-        ",".join(sorted(f"{key}={value}" for key, value in kwargs.items() if key != "session"))
+        ",".join(sorted(f"{key}={value}" for key, value in kwargs.items() if key not in {"session", "user_agent"}))
     return hashlib.md5(signature.encode("utf-8")).hexdigest()
 
 
@@ -79,7 +78,7 @@ def download_indices(
     *,
     session,
     quarters: List[int] | None = None,
-) -> None:
+) -> pd.DataFrame:
     """
     Downloads EDGAR Index files for the specified years and quarters.
 
@@ -107,6 +106,7 @@ def download_indices(
         if quarter not in {1, 2, 3, 4}:
             raise Exception(f'Invalid quarter "{quarter}"')
 
+    output = []
     failed_indices = []
     for year in range(start_year, end_year + 1):
         for quarter in quarters:
@@ -115,71 +115,60 @@ def download_indices(
             ):
                 break
             url = f"{base_url}/{year}/QTR{quarter}/master.zip"
-            if download_index(
+            if (df := download_index(
                 url=url,
                 user_agent=user_agent,
                 session=session,
-            ) is None:
+            )) is None:
                 failed_indices.append(url)
+            else:
+                output.append(df)
 
     while len(failed_indices) > 0:
         results = []
         for url in failed_indices:
-            if download_index(
+            if (df := download_index(
                 url, 
                 user_agent,
                 session=session,
                 verbose_cache=True,
-            ) is None:
+            )) is None:
                 results.append(url)
+            else:
+                output.append(df)
         failed_indices = results
+    
+    return pd.concat(output, ignore_index=True)
 
 
-@cachier(cache_dir=".cache")
+
 def filter_indices(
-    start_year: int,
-    end_year: int,
-    quarters: List[int] | None = None,
-    input_folder: str = "indices",
+    df: pd.DataFrame,
     filing_types: List[str] | None = None,
 ):
     if filing_types is None:
         filing_types = ["10-K", "10-Q", "8-K"]
-    records = []
     logger.info(f"Filtering indices for {filing_types}")
-    for file in tqdm(
-        glob.glob(str(Path(input_folder) / "*.jsonl")),
-        desc="Filtering indices",
-    ):
-        curr_year = int(Path(file).stem.split("_")[0][1:])
-        curr_quarter = int(Path(file).stem.split("_")[1][3:])
-        if curr_year < start_year or curr_year > end_year:
-            continue
-        if quarters is not None and curr_quarter not in quarters:
-            continue
-        df = pd.read_json(file, orient="records", lines=True)
-        df[
-            [
-                "cik",
-                "name",
-                "type",
-                "date",
-                "index_text_url",
-            ]
-        ] = df.original.str.split("|", expand=True)
-        df = df.assign(
-            index_text_url=df["index_text_url"].map(
-                lambda x: "https://www.sec.gov/Archives/" + x
-            ),
-            index_html_url=df["index_html_url"].map(
-                lambda x: "https://www.sec.gov/Archives/" + x
-            ),
-        )
-        subset = df[df.type.isin(filing_types)]
-        subset = subset.drop(columns=["original"])
-        records.append(subset)
-
-    return pd.concat(records, ignore_index=True)
+    df[
+        [
+            "cik",
+            "name",
+            "type",
+            "date",
+            "index_text_url",
+        ]
+    ] = df.original.str.split("|", expand=True)
+    df = df.assign(
+        index_text_url=df["index_text_url"].map(
+            lambda x: "https://www.sec.gov/Archives/" + x
+        ),
+        index_html_url=df["index_html_url"].map(
+            lambda x: "https://www.sec.gov/Archives/" + x
+        ),
+    )
+    subset = df[df.type.isin(filing_types)]
+    subset = subset.drop(columns=["original"])
+    return subset
 
 
 @cachier(cache_dir=".cache", allow_none=False, hash_func=hash_args)
@@ -270,18 +259,15 @@ if __name__ == "__main__":
 
         session = create_session()
 
-        download_indices(
+        df = download_indices(
             start_year=start_year,
             end_year=end_year,
             user_agent=user_agent,
             session=session,
         )
-        df = filter_indices(
-            start_year=start_year,
-            end_year=end_year,
-        )
+        df = filter_indices(df)
         curr = 0
-        pbar = tqdm(df.index_html_url, dynamic_ncols=True)
+        pbar = tqdm(df.index_html_url[:50], dynamic_ncols=True)
         for url in pbar:
             exhibit_urls, md5 = parse_index(url, user_agent, session=session)
             if exhibit_urls is None:

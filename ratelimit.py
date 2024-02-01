@@ -1,3 +1,7 @@
+"""
+Based on https://github.com/JWCook/requests-ratelimiter/tree/728e4dd384a1dffc6bea6ee5592b1610adf032bf
+MIT License: https://github.com/JWCook/requests-ratelimiter/blob/main/LICENSE
+"""
 from fractions import Fraction
 from inspect import signature
 from logging import getLogger
@@ -12,16 +16,16 @@ from typing import Union
 from urllib.parse import urlparse
 from uuid import uuid4
 
-from niquests import PreparedRequest
-from niquests import Response
-from niquests import Session
-from niquests.adapters import HTTPAdapter
 from pyrate_limiter import Duration
 from pyrate_limiter import Limiter
 from pyrate_limiter import RequestRate
 from pyrate_limiter.bucket import AbstractBucket
 from pyrate_limiter.bucket import MemoryListBucket
 from pyrate_limiter.bucket import MemoryQueueBucket
+from requests import PreparedRequest
+from requests import Response
+from requests import Session
+from requests.adapters import HTTPAdapter
 
 if TYPE_CHECKING:
     MIXIN_BASE = Session
