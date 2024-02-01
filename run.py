@@ -20,8 +20,13 @@ from ratelimit import LimiterSession
 
 
 def hash_args(args, kwargs):
-    signature = ",".join(sorted(f"{arg}" for arg in args)) + \
-        ",".join(sorted(f"{key}={value}" for key, value in kwargs.items() if key not in {"session", "user_agent"}))
+    signature = ",".join(sorted(f"{arg}" for arg in args)) + ",".join(
+        sorted(
+            f"{key}={value}"
+            for key, value in kwargs.items()
+            if key not in {"session", "user_agent"}
+        )
+    )
     return hashlib.md5(signature.encode("utf-8")).hexdigest()
 
 
@@ -37,6 +42,7 @@ def create_session():
         ),
     )
 
+
 @cachier(cache_dir=".cache", allow_none=False, hash_func=hash_args)
 def crawl_url(url, user_agent, *, session):
     try:
@@ -46,10 +52,9 @@ def crawl_url(url, user_agent, *, session):
         return None
     return response.content
 
+
 @cachier(cache_dir=".cache", allow_none=False, hash_func=hash_args)
-def download_index(
-    url, user_agent, *, session
-) -> pd.DataFrame:
+def download_index(url, user_agent, *, session) -> pd.DataFrame:
     logger.info(f"Downloading {url}")
     with tempfile.TemporaryFile(mode="w+b") as tmp:
         content = crawl_url(url, user_agent, session=session)
@@ -77,7 +82,6 @@ def download_indices(
     user_agent: str,
     *,
     session,
-    quarters: List[int] | None = None,
 ) -> pd.DataFrame:
     """
     Downloads EDGAR Index files for the specified years and quarters.
@@ -90,22 +94,11 @@ def download_indices(
         The last year to download indices for, inclusive.
     user_agent : str
         The User-Agent string to use when making the request.
-    quarters : List[int], optional
-        The quarters to download indices for. If None, all quarters will be downloaded.
-    skip : bool, optional
-        If True, existing indices will be skipped.
-    output_folder : str, optional
-        The folder to save the indices in.
+    session : requests.Session
+        The session to use when making the request.
     """
     base_url = "https://www.sec.gov/Archives/edgar/full-index"
-
-    if quarters is None:
-        quarters = [1, 2, 3, 4]
-
-    for quarter in quarters:
-        if quarter not in {1, 2, 3, 4}:
-            raise Exception(f'Invalid quarter "{quarter}"')
-
+    quarters = [1, 2, 3, 4]
     output = []
     failed_indices = []
     for year in range(start_year, end_year + 1):
@@ -115,11 +108,13 @@ def download_indices(
             ):
                 break
             url = f"{base_url}/{year}/QTR{quarter}/master.zip"
-            if (df := download_index(
-                url=url,
-                user_agent=user_agent,
-                session=session,
-            )) is None:
+            if (
+                df := download_index(
+                    url=url,
+                    user_agent=user_agent,
+                    session=session,
+                )
+            ) is None:
                 failed_indices.append(url)
             else:
                 output.append(df)
@@ -127,19 +122,20 @@ def download_indices(
     while len(failed_indices) > 0:
         results = []
         for url in failed_indices:
-            if (df := download_index(
-                url, 
-                user_agent,
-                session=session,
-                verbose_cache=True,
-            )) is None:
+            if (
+                df := download_index(
+                    url,
+                    user_agent,
+                    session=session,
+                    verbose_cache=True,
+                )
+            ) is None:
                 results.append(url)
             else:
                 output.append(df)
         failed_indices = results
-    
-    return pd.concat(output, ignore_index=True)
 
+    return pd.concat(output, ignore_index=True)
 
 
 def filter_indices(
@@ -191,7 +187,9 @@ def parse_index(
     records = []
     for tr in table.find_all("tr")[1:]:
         seq, desc, doc_link, doc_type, size = tr.find_all("td")
-        if doc_type.text.upper() != "EX-10" and not doc_type.text.upper().startswith("EX-10."):
+        if doc_type.text.upper() != "EX-10" and not doc_type.text.upper().startswith(
+            "EX-10."
+        ):
             continue
         doc_link = doc_link.find("a")
         if doc_link is None:
@@ -249,14 +247,12 @@ def download_exhibits(
 
 
 if __name__ == "__main__":
-    
 
     def run(
         start_year: int,
         end_year: int,
         user_agent: str,
     ):
-
         session = create_session()
 
         df = download_indices(
@@ -267,13 +263,15 @@ if __name__ == "__main__":
         )
         df = filter_indices(df)
         curr = 0
-        pbar = tqdm(df.index_html_url[:50], dynamic_ncols=True)
+        pbar = tqdm(df.index_html_url, dynamic_ncols=True)
         for url in pbar:
             exhibit_urls, md5 = parse_index(url, user_agent, session=session)
             if exhibit_urls is None:
                 continue
             results = download_exhibits(exhibit_urls, md5, user_agent, session=session)
-            found = len(results[results.doc_content.notna()]) if results is not None else 0
+            found = (
+                len(results[results.doc_content.notna()]) if results is not None else 0
+            )
             curr += found
             pbar.set_description(f"Found {curr} exhibits")
 
