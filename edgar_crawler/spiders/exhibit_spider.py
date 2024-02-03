@@ -13,7 +13,6 @@ class ExhibitSpider(scrapy.Spider):
     name = "exhibit"
     base_url = "https://www.sec.gov"
     index_url = "https://www.sec.gov/Archives/edgar/full-index"
-    index_file = "index-2023-2023.jsonl"
     filing_types = ["10-K", "10-Q", "8-K"]
     custom_settings = {
         "FEEDS": {
