@@ -1,11 +1,11 @@
 # EDGAR-CRAWLER: Unlock the Power of Financial Documents 🚀
 
-This is a modified version of [EDGAR-CRAWLER](https://github.com/nlpaueb/edgar-crawler) to crawl specific material contracts.
+This is a modified version of [EDGAR-CRAWLER](https://github.com/nlpaueb/edgar-crawler) to crawl specific material contracts using [scrapy](https://scrapy.org/).
 
 ## Usage
 ```bash
-poetry install
-python run.py --help
+pip install -r requirements.txt
+scrapy crawl exhibit -a start_year=2023 -a end_year=2023
 ```
 
 ## License
