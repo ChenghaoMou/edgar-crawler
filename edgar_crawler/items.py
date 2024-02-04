@@ -6,7 +6,19 @@
 import scrapy
 
 
-class TutorialItem(scrapy.Item):
+class ExhibitItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    pass
+    index_html_url = scrapy.Field()
+    index_text_url = scrapy.Field()
+    cik = scrapy.Field()
+    name = scrapy.Field()
+    type = scrapy.Field()
+    date = scrapy.Field()
+    seq = scrapy.Field()
+    desc = scrapy.Field()
+    doc_type = scrapy.Field()
+    size = scrapy.Field()
+    filename = scrapy.Field()
+    file_url = scrapy.Field()
+    file = scrapy.Field()

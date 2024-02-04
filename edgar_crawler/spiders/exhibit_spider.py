@@ -1,9 +1,7 @@
-import base64
 import itertools
 import math
 import tempfile
 import zipfile
-import zlib
 from datetime import datetime
 
 import scrapy
@@ -16,7 +14,7 @@ class ExhibitSpider(scrapy.Spider):
     filing_types = ["10-K", "10-Q", "8-K"]
     custom_settings = {
         "FEEDS": {
-            "exhibits.jsonl": {"format": "jsonlines", "overwrite": True},
+            "gs://sec-exhibit10/exhibits.jsonl": {"format": "jsonlines", "overwrite": False},
         },
     }
 
@@ -71,10 +69,7 @@ class ExhibitSpider(scrapy.Spider):
                 if link is None:
                     continue
                 filename = doc_link.css("a::text").get()
-                yield scrapy.Request(
-                    url=self.base_url + link,
-                    callback=self.save_html,
-                    meta={
+                yield {
                         "index_html_url": response.meta["index_html_url"],
                         "index_text_url": response.meta["index_text_url"],
                         "cik": response.meta["cik"],
@@ -86,22 +81,5 @@ class ExhibitSpider(scrapy.Spider):
                         "doc_type": doc_type,
                         "size": size.css("*::text").get(),
                         "filename": filename,
-                    },
-                )
-    
-    def save_html(self, response):
-        yield {
-            "index_html_url": response.meta["index_html_url"],
-            "index_text_url": response.meta["index_text_url"],
-            "cik": response.meta["cik"],
-            "name": response.meta["name"],
-            "type": response.meta["type"],
-            "date": response.meta["date"],
-            "seq": response.meta["seq"],
-            "desc": response.meta["desc"],
-            "doc_link": response.url,
-            "doc_type": response.meta["doc_type"],
-            "size": response.meta["size"],
-            "filename": response.meta["filename"],
-            "html": base64.b64encode(zlib.compress(response.body)).decode()
-        }
+                        "file_urls": [self.base_url + link]
+                    }

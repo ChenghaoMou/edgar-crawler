@@ -5,3 +5,5 @@ exhibits.jsonl
 .scrapy
 .vscode
 .DS_Store
+edgar_crawler/__init__.py
+*credential*
