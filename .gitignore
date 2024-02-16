@@ -7,3 +7,9 @@ exhibits.jsonl
 .DS_Store
 edgar_crawler/__init__.py
 *credential*
+build
+*egg-info
+requirements.txt
+setup.py
+scrapy.cfg
+scrapinghub.yml

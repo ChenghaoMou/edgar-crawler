@@ -14,7 +14,7 @@ class ExhibitSpider(scrapy.Spider):
     filing_types = ["10-K", "10-Q", "8-K"]
     custom_settings = {
         "FEEDS": {
-            "gs://sec-exhibit10/exhibits.jsonl": {"format": "jsonlines", "overwrite": False},
+            "gs://sec-exhibit10/exhibits.jsonl": {"format": "jsonlines", "overwrite": True},
         },
     }
 

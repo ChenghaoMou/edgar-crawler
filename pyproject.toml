@@ -1,0 +1,32 @@
+[project]
+name = "edgar_crawler"
+version = "1.0"
+description = "An EDGAR crawler based on scrapy"
+authors = [{ name = "Chenghao Mou", email = "mouchenghao@gmail.com" }]
+dependencies = [
+    "pandas>=2.2.0",
+    "google-cloud-storage>=2.14.0",
+    "google>=3.0.0",
+    "itemadapter>=0.8.0",
+]
+readme = "README.md"
+requires-python = ">= 3.11"
+
+[project.scripts]
+hello = "edgar_crawler:hello"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "shub>=2.15.4",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/edgar_crawler"]
