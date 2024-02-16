@@ -40,9 +40,10 @@ idna==3.6
     # via requests
 itemadapter==0.8.0
     # via edgar-crawler
-numpy==1.26.4
+numpy==1.24.4
+    # via edgar-crawler
     # via pandas
-pandas==2.2.0
+pandas==2.0.3
     # via edgar-crawler
 protobuf==4.25.3
     # via google-api-core

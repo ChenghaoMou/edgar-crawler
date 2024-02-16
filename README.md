@@ -4,7 +4,6 @@ This is a modified version of [EDGAR-CRAWLER](https://github.com/nlpaueb/edgar-c
 
 ## Usage
 ```bash
-pip install -r requirements.txt
 # Update the settings in edgar_crawler/settings.py to match your needs
 scrapy crawl exhibit -a start_year=2023 -a end_year=2023
 # Deploy the spider to a cloud service
