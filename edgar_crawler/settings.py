@@ -92,5 +92,5 @@ REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
-FILES_STORE = "gs://sec-exhibit10/files/"
-GCS_PROJECT_ID = "personal-project-408914"
+FILES_STORE = "gs://YOUR-BUCKET/files/"
+GCS_PROJECT_ID = "YOUR-PROJECT-ID"
