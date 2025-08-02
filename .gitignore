@@ -1,15 +1,32 @@
+# Python
 .cache
 __pycache__
-scrapinghub.yml
-exhibits.jsonl
+*.py[cod]
+*$py.class
+
+# Scrapy
 .scrapy
+exhibits.jsonl
+
+# IDE and OS
 .vscode
 .DS_Store
-edgar_crawler/__init__.py
-*credential*
+
+# Build artifacts
 build
 *egg-info
+dist/
+
+# Dependencies and packaging
 requirements.txt
 setup.py
-scrapy.cfg
+
+# Config files (duplicated entries cleaned up)
 scrapinghub.yml
+
+# Credentials and sensitive files
+*credential*
+gcp-credentials.json
+
+# Project specific
+edgar_crawler/__init__.py

@@ -25,7 +25,6 @@ def gcp_auth():
 
 
 gcp_auth()
-
 class WebPagePipeline(FilesPipeline):
     def item_completed(self, results: list[FileInfoOrError], item: Any, info: MediaPipeline.SpiderInfo):
         file_paths = [x["path"] for ok, x in results if ok]  # pyright: ignore[reportIndexIssue]
