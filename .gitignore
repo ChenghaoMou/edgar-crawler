@@ -30,3 +30,5 @@ gcp-credentials.json
 
 # Project specific
 edgar_crawler/__init__.py
+
+CLAUDE.md

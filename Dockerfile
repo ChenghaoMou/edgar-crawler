@@ -1,4 +1,4 @@
-FROM scrapinghub/scrapinghub-stack-scrapy:2.11-latest
+FROM scrapinghub/scrapinghub-stack-scrapy:2.13-20250721
 ENV TERM xterm
 ENV SCRAPY_SETTINGS_MODULE edgar_crawler.settings
 RUN mkdir -p /app
