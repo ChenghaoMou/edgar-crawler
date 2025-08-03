@@ -10,6 +10,10 @@ scrapy crawl exhibit -a start_year=2023 -a end_year=2023
 shub deploy
 ```
 
+## Dataset
+
+The crawled dataset is available from [Huggingface](https://huggingface.co/datasets/chenghao/sec-material-contracts).
+
 ## License
 [GNU General Public License v3.0](https://github.com/nlpaueb/edgar-crawler/blob/main/LICENSE)
 
